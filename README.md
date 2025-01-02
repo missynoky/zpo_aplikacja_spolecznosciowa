@@ -35,5 +35,8 @@ BACKEND:
       * Użytkownik zalogowany otrzymuje powiadomienia o polubionych postach oraz komentarzach
         pod swoimi postami
 
-
-
+3. Klucze dostępu:
+   * Admin:
+   username: admin
+   email: admin@gmail.com
+   password: admin
