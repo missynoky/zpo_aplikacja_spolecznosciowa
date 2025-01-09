@@ -40,3 +40,6 @@ BACKEND:
    username: admin
    email: admin@gmail.com
    password: admin
+   * Uzytkownik:
+   username: magda
+   password: Socialapp
