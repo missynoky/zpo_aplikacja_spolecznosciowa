@@ -37,9 +37,10 @@ BACKEND:
 
 3. Klucze dostępu:
    * Admin:
-   username: admin
-   email: admin@gmail.com
-   password: admin
+   username: user123
+   email: user123@email.com
+   password: user123new
    * Uzytkownik:
-   username: magda
-   password: Socialapp
+   username: madzia123
+   email: madzia123@email.com
+   password: Programowanie123
