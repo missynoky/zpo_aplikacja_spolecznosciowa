@@ -31,7 +31,20 @@
         </div>
         <div class="activities__boxContent">
             <p>odpowiedź na post “<a href="{% url 'room' message.room.id %}">{{message.room}}</a>”</p>
-            <div class="activities__boxRoomContent">{{message.body}}</div>
+            {% if request.user == message.user %}
+                <p id="message-text-{{ message.id }}">{{ message.body }}</p>
+
+                <form id="edit-form-{{ message.id }}" action="{% url 'edit-message' message.id %}" method="POST" style="display: none;">
+                    {% csrf_token %}
+                    <input type="text" name="body"  value="{{ message.body }}" />
+                    <button type="submit" class="btn btn--pill">Zapisz</button>
+                    <button type="button" class="btn btn--pill" onclick="cancelEdit({{ message.id }})">Anuluj</button>
+                </form>
+
+                <button class="btn btn--pill" onclick="showEditForm({{ message.id }})">Edytuj</button>
+            {% else %}
+                <p>{{ message.body }}</p>
+            {% endif %}
         </div>
     </div>
     {% endfor %}

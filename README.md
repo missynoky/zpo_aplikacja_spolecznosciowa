@@ -36,7 +36,7 @@ BACKEND:
         pod swoimi postami
 
 3. Klucze dostępu:
-   * Admin:
+   * Uzytkownik:
    username: user123
    email: user123@email.com
    password: user123new

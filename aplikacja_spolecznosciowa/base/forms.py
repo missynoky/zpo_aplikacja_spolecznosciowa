@@ -20,3 +20,10 @@ class UserForm(ModelForm):
     class Meta:
         model = User
         fields = ['avatar', 'name', 'username', 'email', 'bio']
+        labels = {
+            'name': 'Nazwa',
+            'avatar': 'Zdjęcie profilowe',
+            'username': 'Nazwa użytkownika',
+            'email': 'Adres e-mail',
+            'bio': 'Opis'
+        }

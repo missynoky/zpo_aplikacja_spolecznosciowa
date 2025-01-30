@@ -28,5 +28,31 @@
 
     {% endblock %}
     <script src="{% static 'js/script.js' %}"></script>
+  <script>
+    function showEditForm(messageId) {
+        document.getElementById(`message-text-${messageId}`).style.display = "none";
+        document.getElementById(`edit-form-${messageId}`).style.display = "block";
+    }
+
+    function cancelEdit(messageId) {
+        document.getElementById(`edit-form-${messageId}`).style.display = "none";
+        document.getElementById(`message-text-${messageId}`).style.display = "block";
+    }
+    function showEditForm(messageId) {
+    document.querySelector(`button[onclick="showEditForm(${messageId})"]`).style.display = 'none';
+
+    document.getElementById(`edit-form-${messageId}`).style.display = 'block';
+    document.getElementById(`message-text-${messageId}`).style.display = 'none';
+}
+
+function cancelEdit(messageId) {
+    document.querySelector(`button[onclick="showEditForm(${messageId})"]`).style.display = 'inline-block';
+
+    document.getElementById(`edit-form-${messageId}`).style.display = 'none';
+    document.getElementById(`message-text-${messageId}`).style.display = 'block';
+}
+
+</script>
+
   </body>
 </html>

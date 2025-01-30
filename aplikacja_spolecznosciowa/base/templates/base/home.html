@@ -4,12 +4,9 @@
 
     <main class="layout layout--3">
       <div class="container">
-        <!-- Topics Start -->
         {% include 'base/topics_component.html' %}
 
-        <!-- Topics End -->
 
-        <!-- Room List Start -->
         <div class="roomList">
           <div class="mobile-menu">
             <form action="{% url 'home' %}" method="GET" class="header__search">
@@ -49,12 +46,8 @@
           {% include 'base/feed_component.html' %}
 
         </div>
-        <!-- Room List End -->
-
-        <!-- Activities Start -->
         {% include 'base/activity_component.html' %}
 
-        <!-- Activities End -->
       </div>
     </main>
 {% endblock %}

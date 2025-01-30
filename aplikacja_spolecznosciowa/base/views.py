@@ -1,6 +1,6 @@
 from django.contrib.auth import authenticate
 from django.http import HttpResponse
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
@@ -80,6 +80,20 @@ def home(request):
                'room_messages' : room_messages}
     return render(request, 'base/home.html', context)
 
+@login_required(login_url='login')
+def edit_message(request, message_id):
+    message = get_object_or_404(Message, id=message_id)
+
+    if request.user != message.user:
+        return redirect('home')
+
+    if request.method == "POST":
+        message.body = request.POST.get('body')
+        message.save()
+        return redirect('home')  # Przekierowanie na stronę główną po zapisaniu
+
+    return redirect('home')  # Jeśli nie był to POST, wracamy na główną
+
 
 def room(request, pk):
     room = Room.objects.get(id = pk)
@@ -98,6 +112,7 @@ def room(request, pk):
 
     context = {'room' : room, 'room_messages': room_messages, 'participants': participants }
     return render(request, 'base/room.html', context)
+
 
 def userProfile(request, pk):
     user = User.objects.get(id=pk)
@@ -122,7 +137,6 @@ def createRoom(request):
             description=request.POST.get('description'),
         )
         return redirect('home')
-
     context = {'form': form, 'topics': topics}
     return render(request, 'base/room_form.html', context)
 
@@ -144,7 +158,7 @@ def updateRoom(request, pk):
         return redirect('home')
 
     context = {'form': form, 'topics': topics, 'room': room}
-    return render(request, 'base/room_form.html', context)
+    return render(request, 'base/room_form_update.html', context)
 
 
 @login_required(login_url='login')
@@ -195,3 +209,4 @@ def topicsPage(request):
 def activityPage(request):
     room_messages = Message.objects.all()
     return render(request, 'base/activity.html', {'room_messages': room_messages})
+

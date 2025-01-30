@@ -9,6 +9,7 @@ path('logout/', views.logoutUser, name="logout"),
 path('register/', views.registerPage, name="register"),
 
 path('', views.home, name='home'),
+path('edit-message/<int:message_id>/', views.edit_message, name='edit-message'),
 path('room/<str:pk>/', views.room, name='room'),
 path('profile/<str:pk>/', views.userProfile, name='user-profile'),
 
