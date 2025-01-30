@@ -23,4 +23,10 @@ path('update-user/', views.updateUser, name="update-user"),
 path('topics/', views.topicsPage, name="topics"),
 path('activity/', views.activityPage, name="activity"),
 path('notifications/', views.notifications, name='notifications'),
+path('inbox/', views.inbox, name='inbox'),
+path('send_message/', views.send_message, name='send_message'),
+
+
+
+
 ]

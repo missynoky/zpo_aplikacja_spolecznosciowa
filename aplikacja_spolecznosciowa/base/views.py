@@ -1,11 +1,12 @@
 from django.contrib.auth import authenticate
+from django.forms import models
 from django.http import HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.contrib.auth import authenticate, login, logout
-from .models import Room, Topic, Message, User
+from .models import Room, Topic, Message, User, DirectMessage
 from .forms import RoomForm, UserForm, MyUserCreationForm
 from .models import Notification
 import re
@@ -259,3 +260,40 @@ def activityPage(request):
 def notifications(request):
     notifications = request.user.notifications.order_by('-created_at')
     return render(request, 'base/notifications.html', {'notifications': notifications})
+
+
+@login_required(login_url='login')
+def inbox(request):
+    messages_received = DirectMessage.objects.filter(receiver=request.user).order_by('-timestamp')
+    messages_sent = DirectMessage.objects.filter(sender=request.user).order_by('-timestamp')
+    users = User.objects.exclude(id=request.user.id)
+    context = {
+        'messages_received': messages_received,
+        'messages_sent': messages_sent,
+        'users': users
+    }
+    return render(request, 'base/inbox.html', context)
+
+
+
+@login_required(login_url='login')
+def send_message(request):
+    users = User.objects.exclude(id=request.user.id)
+
+    if request.method == 'POST':
+        user_id = request.POST.get('user_id')
+        message_body = request.POST.get('message')
+        receiver = get_object_or_404(User, id=user_id)
+
+        if request.user == receiver:
+            messages.error(request, "Nie możesz wysłać wiadomości do siebie!")
+            return redirect('send_message')
+
+        if message_body.strip():
+            DirectMessage.objects.create(sender=request.user, receiver=receiver, message=message_body)
+            messages.success(request, f"Wiadomość wysłana do @{receiver.username}")
+            return redirect('inbox')
+
+    context = {'users': users}
+    return render(request, 'base/send_message.html', context)
+

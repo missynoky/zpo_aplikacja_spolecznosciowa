@@ -1,0 +1,33 @@
+{% extends 'main.html' %}
+
+{% block content %}
+    <div class="messages-container">
+        <h2>📩 Skrzynka Odbiorcza</h2>
+
+        <div class="messages-section">
+            <h3>Odebrane wiadomości</h3>
+            {% for msg in messages_received %}
+                <div class="message-card">
+                    <p><strong>Od:</strong> @{{ msg.sender.username }}</p>
+                    <p>{{ msg.message }}</p>
+                    <small>{{ msg.timestamp }}</small>
+                </div>
+            {% empty %}
+                <p>Brak wiadomości.</p>
+            {% endfor %}
+        </div>
+
+        <div class="messages-section">
+            <h3>Wysłane wiadomości</h3>
+            {% for msg in messages_sent %}
+                <div class="message-card sent">
+                    <p><strong>Do:</strong> @{{ msg.receiver.username }}</p>
+                    <p>{{ msg.message }}</p>
+                    <small>{{ msg.timestamp }}</small>
+                </div>
+            {% empty %}
+                <p>Nie wysłałeś jeszcze żadnych wiadomości.</p>
+            {% endfor %}
+        </div>
+    </div>
+{% endblock %}
