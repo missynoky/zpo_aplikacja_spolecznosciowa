@@ -44,3 +44,7 @@ BACKEND:
    username: madzia123
    email: madzia123@email.com
    password: Programowanie123
+   * Uzytkownik:
+   username: przemek123
+   email: przemek123@email.com
+   password: User123.

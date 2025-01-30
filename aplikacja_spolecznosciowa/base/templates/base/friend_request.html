@@ -1,0 +1,21 @@
+{% extends 'main.html' %}
+
+{% block content %}
+  <div class="friend-requests-container">
+    <h2>📩 Zaproszenia do znajomych</h2>
+
+    {% if pending_requests %}
+      <ul>
+        {% for request in pending_requests %}
+          <li>
+            <p>@{{ request.sender.username }} wysłał Ci zaproszenie</p>
+            <button class="btn btn--main" onclick="manageFriendRequest({{ request.id }}, 'accept')">✅ Akceptuj</button>
+            <button class="btn btn--secondary" onclick="manageFriendRequest({{ request.id }}, 'reject')">❌ Odrzuć</button>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p>Nie masz żadnych zaproszeń do znajomych.</p>
+    {% endif %}
+  </div>
+{% endblock %}

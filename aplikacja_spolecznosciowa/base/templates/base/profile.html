@@ -15,9 +15,23 @@
           <div class="profile__info">
             <h3>{{user.username}}</h3>
             <p>@{{user.username}}</p>
-            {% if request.user == user %}
-            <a href="{% url 'update-user' %}" class="btn btn--main btn--pill">Edytuj profil</a>
-            {% endif %}
+          {% if request.user == user %}
+              <a href="{% url 'update-user' %}" class="btn btn--main btn--pill">Edytuj profil</a>
+          {% else %}
+              {% if is_friend %}
+                  <button class="btn btn--secondary btn--pill" onclick="removeFriend({{ user.id }})">
+                      ❌ Usuń ze znajomych
+                  </button>
+              {% elif friend_request_sent %}
+                  <button class="btn btn--disabled btn--pill">
+                      ✅ Zaproszenie wysłane
+                  </button>
+              {% else %}
+                  <button class="btn btn--main btn--pill" onclick="sendFriendRequest({{ user.id }})">
+                      ➕ Dodaj do znajomych
+                  </button>
+              {% endif %}
+          {% endif %}
           </div>
           <div class="profile__about">
             <h3>O mnie</h3>

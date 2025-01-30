@@ -1,5 +1,3 @@
-from tkinter.font import names
-
 from django.urls import path
 from . import views
 
@@ -26,7 +24,12 @@ path('notifications/', views.notifications, name='notifications'),
 path('inbox/', views.inbox, name='inbox'),
 path('send_message/', views.send_message, name='send_message'),
 
-
+path('send_friend_request/<int:user_id>/', views.send_friend_request, name='send_friend_request'),
+path('manage_friend_request/<int:request_id>/<str:action>/', views.manage_friend_request,
+         name='manage_friend_request'),
+path('friends/', views.friend_list, name='friend_list'),
+path('friend_requests/', views.friend_requests, name='friend_requests'),
+path('remove_friend/<int:user_id>/', views.remove_friend, name='remove_friend'),
 
 
 ]

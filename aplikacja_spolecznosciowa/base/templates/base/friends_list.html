@@ -1,0 +1,14 @@
+{% extends 'main.html' %}
+
+{% block content %}
+    <div class="friends-container">
+        <h2>👥 Twoi znajomi</h2>
+        <ul>
+            {% for friend in friends %}
+                <li>{{ friend.username }}</li>
+            {% empty %}
+                <p>Nie masz jeszcze znsajomych.</p>
+            {% endfor %}
+        </ul>
+    </div>
+{% endblock %}

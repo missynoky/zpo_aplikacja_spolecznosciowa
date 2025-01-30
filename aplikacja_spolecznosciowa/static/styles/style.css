@@ -1375,3 +1375,82 @@ button:hover {
     color: white;
     border-radius: 5px;
 }
+
+.friends-container, .friend-requests-container {
+    max-width: 600px;
+    margin: 40px auto;
+    background-color: var(--color-dark-medium);
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    color: var(--color-light);
+}
+
+
+.friends-container h2, .friend-requests-container h2 {
+    font-size: 24px;
+    color: var(--color-main);
+    margin-bottom: 20px;
+}
+
+
+.friends-container ul, .friend-requests-container ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+
+.friends-container li, .friend-requests-container li {
+    background: var(--color-dark-light);
+    padding: 12px;
+    margin: 10px 0;
+    border-radius: 6px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: 0.3s ease;
+    border: 1px solid var(--color-gray);
+}
+
+.friends-container li:hover, .friend-requests-container li:hover {
+    background: var(--color-dark-medium);
+}
+
+.friend-requests-container p, .friends-container p {
+    font-size: 16px;
+    color: var(--color-light-gray);
+    margin-top: 20px;
+}
+
+
+.friends-container .btn, .friend-requests-container .btn {
+    padding: 10px 16px;
+    font-size: 14px;
+    border: none;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: 0.3s;
+}
+
+
+.friends-container .btn--main, .friend-requests-container .btn--main {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.friends-container .btn--main:hover, .friend-requests-container .btn--main:hover {
+    background-color: #45a049;
+}
+
+
+.friends-container .btn--secondary, .friend-requests-container .btn--secondary {
+    background-color: #f44336;
+    color: white;
+}
+
+.friends-container .btn--secondary:hover, .friend-requests-container .btn--secondary:hover {
+    background-color: #d32f2f;
+}
+

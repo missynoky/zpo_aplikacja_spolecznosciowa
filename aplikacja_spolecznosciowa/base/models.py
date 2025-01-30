@@ -71,3 +71,25 @@ class DirectMessage(models.Model):
     def __str__(self):
         return f"{self.sender.username} -> {self.receiver.username}: {self.message[:30]}"
 
+class FriendRequest(models.Model):
+    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name="sent_requests")
+    receiver = models.ForeignKey(User, on_delete=models.CASCADE, related_name="received_requests")
+    timestamp = models.DateTimeField(auto_now_add=True)
+    is_accepted = models.BooleanField(null=True)
+
+    class Meta:
+        unique_together = ('sender', 'receiver')
+
+    def __str__(self):
+        return f"{self.sender.username} → {self.receiver.username} ({'Oczekujące' if self.is_accepted is None else 'Zaakceptowane' if self.is_accepted else 'Odrzucone'})"
+
+class Friendship(models.Model):
+    user1 = models.ForeignKey(User, on_delete=models.CASCADE, related_name="friends_1")
+    user2 = models.ForeignKey(User, on_delete=models.CASCADE, related_name="friends_2")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user1', 'user2')
+
+    def __str__(self):
+        return f"{self.user1.username} 🤝 {self.user2.username}"

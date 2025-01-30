@@ -52,7 +52,57 @@ function cancelEdit(messageId) {
     document.getElementById(`message-text-${messageId}`).style.display = 'block';
 }
 
+function sendFriendRequest(userId) {
+        fetch(`/send_friend_request/${userId}/`, {
+            method: "POST",
+            headers: { "X-CSRFToken": "{{ csrf_token }}" }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert("Zaproszenie wysłane!");
+                location.reload();
+            } else {
+                alert(data.error);
+            }
+        })
+        .catch(error => console.error("Błąd:", error));
+    }
+
+    function removeFriend(userId) {
+        fetch(`/remove_friend/${userId}/`, {
+            method: "POST",
+            headers: { "X-CSRFToken": "{{ csrf_token }}" }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert("Znajomy usunięty!");
+                location.reload();  // Odśwież stronę po usunięciu znajomego
+            } else {
+                alert(data.error);
+            }
+        })
+        .catch(error => console.error("Błąd:", error));
+    }
+    function manageFriendRequest(requestId, action) {
+        fetch(`/manage_friend_request/${requestId}/${action}/`, {
+            method: "POST",
+            headers: { "X-CSRFToken": "{{ csrf_token }}" }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.success);
+                location.reload();
+            } else {
+                alert(data.error);
+            }
+        })
+        .catch(error => console.error("Błąd:", error));
+    }
 </script>
+
 
   </body>
 </html>

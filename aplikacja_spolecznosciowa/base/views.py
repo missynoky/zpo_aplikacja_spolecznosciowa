@@ -1,12 +1,12 @@
 from django.contrib.auth import authenticate
 from django.forms import models
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.contrib.auth import authenticate, login, logout
-from .models import Room, Topic, Message, User, DirectMessage
+from .models import Room, Topic, Message, User, DirectMessage, FriendRequest, Friendship
 from .forms import RoomForm, UserForm, MyUserCreationForm
 from .models import Notification
 import re
@@ -160,12 +160,28 @@ def room(request, pk):
 
 
 def userProfile(request, pk):
-    user = User.objects.get(id=pk)
+    user = get_object_or_404(User, id=pk)
     rooms = user.room_set.all()
     room_messages = user.message_set.all()
     topics = Topic.objects.all()
-    context = {'user': user, 'rooms': rooms, 'room_messages': room_messages, 'topics': topics}
-    return render (request, 'base/profile.html', context)
+
+    is_friend = Friendship.objects.filter(
+        Q(user1=request.user, user2=user) | Q(user1=user, user2=request.user)
+    ).exists()
+
+    friend_request_sent = FriendRequest.objects.filter(
+        sender=request.user, receiver=user
+    ).exists()
+
+    context = {
+        'user': user,
+        'rooms': rooms,
+        'room_messages': room_messages,
+        'topics': topics,
+        'is_friend': is_friend,
+        'friend_request_sent': friend_request_sent
+    }
+    return render(request, 'base/profile.html', context)
 
 @login_required(login_url='login')
 def createRoom(request):
@@ -297,3 +313,71 @@ def send_message(request):
     context = {'users': users}
     return render(request, 'base/send_message.html', context)
 
+
+@login_required(login_url='login')
+def send_friend_request(request, user_id):
+    receiver = get_object_or_404(User, id=user_id)
+
+    if request.user == receiver:
+        return JsonResponse({"error": "Nie możesz dodać siebie do znajomych."}, status=400)
+
+    friend_request, created = FriendRequest.objects.get_or_create(sender=request.user, receiver=receiver)
+
+    if not created:
+        return JsonResponse({"error": "Zaproszenie zostało już wysłane."}, status=400)
+
+    return JsonResponse({"success": "Zaproszenie wysłane!"})
+
+
+@login_required(login_url='login')
+def manage_friend_request(request, request_id, action):
+    friend_request = get_object_or_404(FriendRequest, id=request_id)
+
+    if friend_request.receiver != request.user:
+        return JsonResponse({"error": "Nie masz uprawnień do tej operacji."}, status=403)
+
+    if action == "accept":
+        friend_request.is_accepted = True
+        Friendship.objects.create(user1=friend_request.sender, user2=friend_request.receiver)
+        friend_request.delete()
+
+        return JsonResponse({"success": "Znajomość zaakceptowana!"})
+
+    elif action == "reject":
+        friend_request.is_accepted = False
+        friend_request.delete()
+        return JsonResponse({"success": "Zaproszenie odrzucone."})
+
+    return JsonResponse({"error": "Nieprawidłowa akcja."}, status=400)
+
+
+@login_required(login_url='login')
+def friend_list(request):
+    friends = Friendship.objects.filter(
+        Q(user1=request.user) | Q(user2=request.user)
+    )
+
+    friend_users = [friend.user1 if friend.user2 == request.user else friend.user2 for friend in friends]
+
+    return render(request, 'base/friends_list.html', {'friends': friend_users})
+
+@login_required(login_url='login')
+def friend_requests(request):
+    pending_requests = FriendRequest.objects.filter(receiver=request.user, is_accepted=None)
+
+    return render(request, 'base/friend_request.html', {'pending_requests': pending_requests})
+
+
+@login_required(login_url='login')
+def remove_friend(request, user_id):
+    user_to_remove = get_object_or_404(User, id=user_id)
+
+    friendship = Friendship.objects.filter(
+        Q(user1=request.user, user2=user_to_remove) | Q(user1=user_to_remove, user2=request.user)
+    )
+
+    if friendship.exists():
+        friendship.delete()
+        return JsonResponse({"success": "Znajomość usunięta!"})
+
+    return JsonResponse({"error": "Nie jesteście znajomymi."}, status=400)

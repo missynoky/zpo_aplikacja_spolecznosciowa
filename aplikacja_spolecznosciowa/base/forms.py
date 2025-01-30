@@ -7,6 +7,13 @@ class MyUserCreationForm(UserCreationForm):
     class Meta:
         model = User
         fields = ['name', 'username', 'email', 'password1', 'password2']
+        labels = {
+            'name': 'Nazwa',
+            'username': 'Nazwa użytkownika',
+            'email': 'Adres e-mail',
+            'password1': 'Hasło',
+            'password2': 'Powtórz hasło',
+        }
 
 
 class RoomForm(ModelForm):
