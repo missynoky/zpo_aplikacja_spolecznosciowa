@@ -61,7 +61,7 @@ a {
   text-decoration: none;
 }
 
-/*========== components ==========*/
+
 .container {
   max-width: 120rem;
   width: 90%;
@@ -260,9 +260,7 @@ a {
   }
 }
 
-/*==============================
-=>  Header Section
-================================*/
+
 
 .header {
   padding: 1.5rem;
@@ -384,9 +382,7 @@ a {
   fill: var(--color-main);
 }
 
-/*==============================
-=>  Layout
-================================*/
+
 
 .layout {
   margin-top: 2.4rem;
@@ -418,7 +414,7 @@ a {
 .layout--2 > .container > div:last-child {
   flex-basis: 25%;
 }
-/*========== Layout Box ==========*/
+
 
 .layout__box {
   width: 90%;
@@ -473,9 +469,7 @@ a {
   }
 }
 
-/*==============================
-=>  Topics
-================================*/
+
 
 .form__group {
   margin-bottom: 2rem;
@@ -551,9 +545,7 @@ a {
   text-decoration: underline;
 }
 
-/*==============================
-=>  Topics
-================================*/
+
 
 .topics__header {
   margin-bottom: 2rem;
@@ -614,9 +606,6 @@ a {
   }
 }
 
-/*==============================
-=>  Room List
-================================*/
 
 .roomList__header {
   display: flex;
@@ -637,7 +626,7 @@ a {
   color: var(--color-dark-light);
 }
 
-/*========== Room List Room ==========*/
+
 
 .roomListRoom {
   margin-bottom: 2.4rem;
@@ -725,9 +714,7 @@ a {
   font-size: 1.3rem;
 }
 
-/*==============================
-=>  Activities
-================================*/
+
 
 .activities {
   background: var(--color-dark);
@@ -787,33 +774,25 @@ a {
   fill: var(--color-light-gray);
 }
 
-/*==============================
-=>  Create Room
-================================*/
+
 
 .create-room.layout .layout__box {
   max-width: 68rem;
 }
 
-/*==============================
-=>  Update Account
-================================*/
+
 
 .update-account.layout .layout__box {
   max-width: 68rem;
 }
 
-/*==============================
-=>  Delete Item
-================================*/
+
 
 .delete-item.layout .layout__box {
   max-width: 68rem;
 }
 
-/*==============================
-=>  Auth
-================================*/
+
 
 .auth__tagline {
   text-align: center;
@@ -832,9 +811,6 @@ a {
   text-align: center;
 }
 
-/*==============================
-=>  Settings
-================================*/
 
 .settings__avatar {
   margin-bottom: 3rem;
@@ -848,9 +824,6 @@ a {
   margin: 1rem;
 }
 
-/*==============================
-=>  Profile
-================================*/
 .profile {
   margin-bottom: 3rem;
 }
@@ -893,9 +866,7 @@ a {
   color: var(--color-dark-light);
 }
 
-/*==============================
-=>  Room
-================================*/
+
 
 .room,
 .participants {
@@ -985,7 +956,6 @@ a {
   padding-left: 2rem;
   padding-right: 2rem;
   height: 80.5vh;
-  /* overflow-y: auto; */
   padding-bottom: 0;
 }
 
@@ -1315,14 +1285,14 @@ button:hover {
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 80vh; /* Zapewnia centrowanie w pionie */
+    min-height: 80vh;
 }
 
 .send-message-container {
-    background: #1e1e1e; /* Ciemne tło pasujące do designu */
+    background: #1e1e1e;
     padding: 20px;
     border-radius: 10px;
-    width: 400px; /* Ogranicza szerokość formularza */
+    width: 400px;
     box-shadow: 0 4px 8px rgba(255, 255, 255, 0.1);
     text-align: center;
 }

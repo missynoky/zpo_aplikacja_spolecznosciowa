@@ -1,5 +1,3 @@
-from django.contrib.auth import authenticate
-from django.forms import models
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
@@ -11,12 +9,6 @@ from .forms import RoomForm, UserForm, MyUserCreationForm
 from .models import Notification
 import re
 
-# rooms = [
-#     { 'id':1, 'name':'Moje konto'},
-#     { 'id':2, 'name':'Aktualności'},
-#     { 'id':3, 'name':'Moi znajomi'},
-#
-# ]
 
 def loginPage(request):
     page = 'login'
@@ -95,9 +87,9 @@ def edit_message(request, message_id):
     if request.method == "POST":
         message.body = request.POST.get('body')
         message.save()
-        return redirect('home')  # Przekierowanie na stronę główną po zapisaniu
+        return redirect('home')
 
-    return redirect('home')  # Jeśli nie był to POST, wracamy na główną
+    return redirect('home')
 
 
 
