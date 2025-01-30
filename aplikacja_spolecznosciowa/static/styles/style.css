@@ -1,18 +1,19 @@
 @import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap");
 
 :root {
-  --color-main: #71c6dd;
-  --color-main-light: #e1f6fb;
-  --color-dark: #3f4156;
-  --color-dark-medium: #51546e;
-  --color-dark-light: #696d97;
-  --color-light: #e5e5e5;
-  --color-gray: #8b8b8b;
-  --color-light-gray: #b2bdbd;
-  --color-bg: #2d2d39;
-  --color-success: #5dd693;
-  --color-error: #fc4b0b;
+  --color-main: #ff9a8b;
+  --color-main-light: #ffe5e0;
+  --color-dark: #212121;
+  --color-dark-medium: #333333;
+  --color-dark-light: #444444;
+  --color-light: #f7f7f7;
+  --color-gray: #888888;
+  --color-light-gray: #b0b0b0;
+  --color-bg: #1a1a1a;
+  --color-success: #58c9b9;
+  --color-error: #f56c6c;
 }
+
 
 
 * {
@@ -1160,4 +1161,94 @@ a {
   font-weight: 500;
   color: var(--color-main);
   font-weight: 1.4rem;
+}
+
+
+.content-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    max-width: 700px;
+    margin: 60px auto;
+    padding: 20px;
+    background-color: var(--color-dark-medium);
+    border-radius: 12px;
+    box-shadow: 0px 6px 15px rgba(0, 0, 0, 0.3);
+    color: var(--color-light);
+    font-family: 'Inter', sans-serif;
+}
+
+.notifications-title {
+    font-size: 26px;
+    font-weight: 600;
+    text-align: center;
+    margin-bottom: 20px;
+    color: var(--color-main);
+}
+
+.notifications-list {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.notification-card {
+    background-color: var(--color-dark-light);
+    padding: 15px;
+    border-radius: 8px;
+    border-left: 5px solid var(--color-main);
+    transition: all 0.3s ease;
+}
+
+.notification-card:hover {
+    background-color: var(--color-dark);
+    transform: scale(1.02);
+}
+
+.notification-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+    color: var(--color-light-gray);
+    margin-bottom: 5px;
+}
+
+.notification-user {
+    font-weight: 600;
+    color: var(--color-main);
+}
+
+.notification-time {
+    font-size: 12px;
+    color: var(--color-gray);
+}
+
+.notification-message {
+    font-size: 16px;
+    margin: 10px 0;
+}
+
+.notification-link {
+    display: inline-block;
+    padding: 8px 12px;
+    margin-top: 10px;
+    background-color: var(--color-main);
+    color: var(--color-dark);
+    font-weight: 600;
+    text-decoration: none;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+}
+
+.notification-link:hover {
+    background-color: var(--color-main-light);
+}
+
+.no-notifications {
+    text-align: center;
+    font-size: 18px;
+    color: var(--color-light-gray);
+    margin-top: 20px;
 }

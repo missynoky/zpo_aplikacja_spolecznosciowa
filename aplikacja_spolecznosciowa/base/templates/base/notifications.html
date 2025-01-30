@@ -1,0 +1,24 @@
+{% extends 'main.html' %}
+
+{% block content %}
+    <main class="content-container">
+        <h2 class="notifications-title">🔔 Powiadomienia</h2>
+
+        {% if notifications %}
+            <div class="notifications-list">
+                {% for notification in notifications %}
+                    <div class="notification-card">
+                        <div class="notification-header">
+                            <span class="notification-user">@{{ notification.sender.username }}</span>
+                            <span class="notification-time">{{ notification.created_at|date:"H:i, d M Y" }}</span>
+                        </div>
+                        <p class="notification-message">{{ notification.message }}</p>
+                        <a href="{{ notification.link }}" class="notification-link">👉 Przejdź do wiadomości</a>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="no-notifications">Brak nowych powiadomień 💤</p>
+        {% endif %}
+    </main>
+{% endblock %}

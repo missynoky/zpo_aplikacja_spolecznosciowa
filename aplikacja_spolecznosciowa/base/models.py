@@ -1,5 +1,6 @@
 from django.db import models
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractUser, User
+
 
 class User(AbstractUser):
     name = models.CharField(max_length=200, null=True)
@@ -45,3 +46,15 @@ class Message(models.Model):
 
     def __str__(self):
         return self.body[0:50]
+
+
+class Notification(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="notifications")
+    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name="sent_notifications", null=True, blank=True)
+    message = models.CharField(max_length=255)
+    link = models.URLField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_read = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.user.username} - {self.message}"

@@ -7,7 +7,8 @@ from django.db.models import Q
 from django.contrib.auth import authenticate, login, logout
 from .models import Room, Topic, Message, User
 from .forms import RoomForm, UserForm, MyUserCreationForm
-
+from .models import Notification
+import re
 
 # rooms = [
 #     { 'id':1, 'name':'Moje konto'},
@@ -74,10 +75,13 @@ def home(request):
     topics = Topic.objects.all()[0:5]
     room_count = rooms.count()
     room_messages = Message.objects.filter(Q(room__topic__name__icontains=q))
-
+    notifications_count = 0
+    if request.user.is_authenticated:
+        notifications_count = Notification.objects.filter(user=request.user, is_read=False).count()
 
     context = {'rooms': rooms, 'topics':topics, 'room_count': room_count,
-               'room_messages' : room_messages}
+               'room_messages' : room_messages,
+               'notifications_count': notifications_count}
     return render(request, 'base/home.html', context)
 
 @login_required(login_url='login')
@@ -95,23 +99,63 @@ def edit_message(request, message_id):
     return redirect('home')  # Jeśli nie był to POST, wracamy na główną
 
 
+
+
 def room(request, pk):
-    room = Room.objects.get(id = pk)
+    room = Room.objects.get(id=pk)
     room_messages = room.message_set.all()
     participants = room.participants.all()
 
     if request.method == "POST":
+        message_body = request.POST.get('body')
         message = Message.objects.create(
             user=request.user,
             room=room,
-            body = request.POST.get('body')
+            body=message_body
         )
         room.participants.add(request.user)
+
+        if request.user != room.host:
+            Notification.objects.create(
+                user=room.host,
+                sender=request.user,
+                message=f"{request.user.username} dodał nową wiadomość w {room.name}.",
+                link=f"/room/{room.id}"
+            )
+
+        if ">>" in message_body:
+            reply_to_id = message_body.split(">>")[1].split()[0]
+            try:
+                replied_message = Message.objects.get(id=reply_to_id)
+                if replied_message.user != request.user:
+                    Notification.objects.create(
+                        user=replied_message.user,
+                        sender=request.user,
+                        message=f"{request.user.username} odpowiedział na Twoją wiadomość w {room.name}.",
+                        link=f"/room/{room.id}#message-{replied_message.id}"
+                    )
+            except Message.DoesNotExist:
+                pass
+
+        mentioned_users = re.findall(r"@(\w+)", message_body)
+        for username in mentioned_users:
+            try:
+                mentioned_user = User.objects.get(username=username)
+                if mentioned_user != request.user:
+                    Notification.objects.create(
+                        user=mentioned_user,
+                        sender=request.user,
+                        message=f"{request.user.username} wspomniał Cię w wiadomości w {room.name}.",
+                        link=f"/room/{room.id}#message-{message.id}"
+                    )
+            except User.DoesNotExist:
+                pass
+
         return redirect('room', pk=room.id)
 
-
-    context = {'room' : room, 'room_messages': room_messages, 'participants': participants }
+    context = {'room': room, 'room_messages': room_messages, 'participants': participants}
     return render(request, 'base/room.html', context)
+
 
 
 def userProfile(request, pk):
@@ -210,3 +254,8 @@ def activityPage(request):
     room_messages = Message.objects.all()
     return render(request, 'base/activity.html', {'room_messages': room_messages})
 
+
+@login_required(login_url='login')
+def notifications(request):
+    notifications = request.user.notifications.order_by('-created_at')
+    return render(request, 'base/notifications.html', {'notifications': notifications})
