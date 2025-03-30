@@ -92,20 +92,23 @@ def edit_message(request, message_id):
     return redirect('home')
 
 
-
-
 def room(request, pk):
     room = Room.objects.get(id=pk)
     room_messages = room.message_set.all()
     participants = room.participants.all()
 
     if request.method == "POST":
-        message_body = request.POST.get('body')
-        message = Message.objects.create(
-            user=request.user,
-            room=room,
-            body=message_body
-        )
+        message_body = request.POST.get('body', '')
+        files = request.FILES.getlist('files')
+
+        for file in files:
+            message = Message.objects.create(
+                user=request.user,
+                room=room,
+                body=message_body if file == files[0] else "",
+                file=file
+            )
+
         room.participants.add(request.user)
 
         if request.user != room.host:

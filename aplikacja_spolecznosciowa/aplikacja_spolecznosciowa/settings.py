@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 from django.conf.global_settings import STATICFILES_DIRS, AUTH_USER_MODEL, MEDIA_URL
 
