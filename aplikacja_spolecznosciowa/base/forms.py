@@ -34,3 +34,11 @@ class UserForm(ModelForm):
             'email': 'Adres e-mail',
             'bio': 'Opis'
         }
+
+from django import forms
+from .models import Photo
+
+class PhotoForm(forms.ModelForm):
+    class Meta:
+        model = Photo
+        fields = ["image", "title", "description"]

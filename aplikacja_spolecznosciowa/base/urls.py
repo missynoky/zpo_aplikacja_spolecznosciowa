@@ -8,6 +8,12 @@ path('login/', views.loginPage, name="login"),
 path('logout/', views.logoutUser, name="logout"),
 path('register/', views.registerPage, name="register"),
 
+    path("gallery/<str:username>/", views.gallery_view, name="gallery"),
+    path("upload/", views.upload_photo, name="upload-photo"),
+    path("edit/<int:photo_id>/", views.edit_photo, name="edit-photo"),
+path('delete-photo/<int:photo_id>/', views.delete_photo, name='delete-photo'),
+
+
 path('', views.home, name='home'),
 path('edit-message/<int:message_id>/', views.edit_message, name='edit-message'),
 path('room/<str:pk>/', views.room, name='room'),

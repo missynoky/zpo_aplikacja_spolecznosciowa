@@ -1,0 +1,274 @@
+{% extends 'main.html' %}
+
+{% block content %}
+<main class="upload-page">
+    <div class="upload-container">
+        <div class="upload-card">
+            <div class="upload-header">
+                <h1>Dodaj nowe zdjęcie</h1>
+                <p>Udostępnij swoje wspomnienia z innymi</p>
+            </div>
+
+            <form method="post" enctype="multipart/form-data" class="upload-form">
+                {% csrf_token %}
+
+                <div class="form-group">
+                    <label for="id_image" class="file-upload-label">
+                        <span class="upload-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7"></path>
+                                <line x1="16" y1="5" x2="22" y2="5"></line>
+                                <line x1="19" y1="2" x2="19" y2="8"></line>
+                                <circle cx="9" cy="9" r="2"></circle>
+                                <path d="M21 15l-3.086-3.086a2 2 0 0 0-2.828 0L6 21"></path>
+                            </svg>
+                        </span>
+                        <span class="file-upload-text">Wybierz zdjęcie</span>
+                        {{ form.image }}
+                    </label>
+                    <div class="file-preview" id="imagePreview"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="id_title">Tytuł</label>
+                    {{ form.title }}
+                </div>
+
+                <div class="form-group">
+                    <label for="id_description">Opis (opcjonalny)</label>
+                    {{ form.description }}
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <span>Dodaj zdjęcie</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 5v14M5 12h14"></path>
+                        </svg>
+                    </button>
+                    <a href="{% url 'gallery' username=request.user.username %}" class="btn btn-secondary">Anuluj</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</main>
+
+<style>
+    /* Główne style */
+    .upload-page {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: calc(100vh - 100px);
+        padding: 2rem;
+        background-color: #f8f9fa;
+    }
+
+    .upload-container {
+        width: 100%;
+        max-width: 600px;
+    }
+
+    .upload-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+        padding: 2.5rem;
+    }
+
+    .upload-header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .upload-header h1 {
+        font-size: 1.8rem;
+        color: #2c3e50;
+        margin-bottom: 0.5rem;
+    }
+
+    .upload-header p {
+        color: #7f8c8d;
+        font-size: 1rem;
+    }
+
+    /* Formularz */
+    .upload-form {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .form-group label {
+        font-weight: 500;
+        color: #2c3e50;
+        font-size: 0.95rem;
+    }
+
+    /* Pole wyboru pliku */
+    .file-upload-label {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
+        border: 2px dashed #dfe6e9;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-align: center;
+        background-color: #f8f9fa;
+    }
+
+    .file-upload-label:hover {
+        border-color: #74b9ff;
+        background-color: #f1f9ff;
+    }
+
+    .upload-icon {
+        font-size: 2.5rem;
+        color: #74b9ff;
+        margin-bottom: 1rem;
+    }
+
+    .file-upload-text {
+        color: #636e72;
+        font-size: 1rem;
+        margin-bottom: 0.5rem;
+    }
+
+    #id_image {
+        display: none;
+    }
+
+    /* Podgląd zdjęcia */
+    .file-preview {
+        margin-top: 1rem;
+        display: none;
+        max-height: 200px;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .file-preview img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+    }
+
+    /* Pola formularza */
+    #id_title,
+    #id_description {
+        width: 100%;
+        padding: 0.8rem 1rem;
+        border: 1px solid #dfe6e9;
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: border 0.3s ease;
+    }
+
+    #id_title:focus,
+    #id_description:focus {
+        outline: none;
+        border-color: #74b9ff;
+        box-shadow: 0 0 0 3px rgba(116, 185, 255, 0.2);
+    }
+
+    #id_description {
+        min-height: 100px;
+        resize: vertical;
+    }
+
+    /* Przyciski */
+    .form-actions {
+        display: flex;
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.8rem 1.5rem;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: none;
+        gap: 0.5rem;
+    }
+
+    .btn-primary {
+        background-color: #3498db;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background-color: #2980b9;
+    }
+
+    .btn-secondary {
+        background-color: #f1f2f6;
+        color: #2d3436;
+    }
+
+    .btn-secondary:hover {
+        background-color: #dfe6e9;
+    }
+
+    /* Responsywność */
+    @media (max-width: 768px) {
+        .upload-page {
+            padding: 1rem;
+        }
+
+        .upload-card {
+            padding: 1.5rem;
+        }
+
+        .form-actions {
+            flex-direction: column;
+        }
+
+        .btn {
+            width: 100%;
+        }
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const fileInput = document.getElementById('id_image');
+    const previewContainer = document.getElementById('imagePreview');
+
+    fileInput.addEventListener('change', function() {
+        const file = this.files[0];
+        if (file) {
+            const reader = new FileReader();
+
+            reader.onload = function(e) {
+                previewContainer.innerHTML = '';
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                previewContainer.appendChild(img);
+                previewContainer.style.display = 'block';
+            }
+
+            reader.readAsDataURL(file);
+        } else {
+            previewContainer.style.display = 'none';
+        }
+    });
+});
+</script>
+{% endblock %}

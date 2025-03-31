@@ -376,3 +376,77 @@ def remove_friend(request, user_id):
         return JsonResponse({"success": "Znajomość usunięta!"})
 
     return JsonResponse({"error": "Nie jesteście znajomymi."}, status=400)
+
+
+from .models import Photo
+from .forms import PhotoForm
+
+@login_required
+def gallery_view(request, username):
+    user = get_object_or_404(User, username=username)
+    photos = Photo.objects.filter(user=user)
+    return render(request, "base/gallery.html", {"user": user, "photos": photos})
+
+@login_required
+def upload_photo(request):
+    if request.method == "POST":
+        form = PhotoForm(request.POST, request.FILES)
+        if form.is_valid():
+            photo = form.save(commit=False)
+            photo.user = request.user
+            photo.save()
+            return redirect("gallery", username=request.user.username)
+    else:
+        form = PhotoForm()
+    return render(request, "base/upload_photo.html", {"form": form})
+
+
+import base64
+from django.core.files.base import ContentFile
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from .models import Photo
+
+
+@login_required
+def edit_photo(request, photo_id):
+    photo = get_object_or_404(Photo, id=photo_id, user=request.user)
+
+    if request.method == "POST":
+        edited_image_data = request.POST.get("edited_image")
+
+        if edited_image_data:
+            try:
+                # Usuń nagłówek danych base64
+                img_str = edited_image_data.split('base64,')[-1]
+                img_data = base64.b64decode(img_str)
+
+                # Utwórz nazwę pliku z rozszerzeniem
+                ext = 'png'  # domyślnie PNG, bo tak zapisujemy z canvas
+                filename = f"edited_{photo.id}.{ext}"
+
+                # Zapisz nowy obraz
+                photo.image.save(filename, ContentFile(img_data), save=True)
+
+                messages.success(request, "Zdjęcie zostało zapisane!")
+                return redirect("gallery", username=request.user.username)
+
+            except Exception as e:
+                messages.error(request, f"Błąd podczas zapisywania: {str(e)}")
+                return redirect("edit_photo", photo_id=photo.id)
+
+    # Dla GET pokaż formularz
+    return render(request, "base/edit_photo.html", {"photo": photo})
+
+from django.http import JsonResponse
+
+@login_required
+def delete_photo(request, photo_id):
+    if request.method == "POST":
+        try:
+            photo = Photo.objects.get(id=photo_id, user=request.user)
+            photo.delete()
+            return JsonResponse({'success': True})
+        except Photo.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Zdjęcie nie istnieje'})
+    return JsonResponse({'success': False, 'error': 'Nieprawidłowa metoda'})

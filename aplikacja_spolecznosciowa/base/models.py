@@ -95,3 +95,14 @@ class Friendship(models.Model):
 
     def __str__(self):
         return f"{self.user1.username} 🤝 {self.user2.username}"
+
+
+class Photo(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="photos")
+    image = models.ImageField(upload_to="gallery/")
+    title = models.CharField(max_length=255, blank=True, null=True)
+    description = models.TextField(blank=True, null=True)
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.title if self.title else f"Zdjęcie {self.id}"

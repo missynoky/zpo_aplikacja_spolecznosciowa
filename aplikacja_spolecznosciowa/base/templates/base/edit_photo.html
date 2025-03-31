@@ -1,0 +1,631 @@
+
+{% extends 'main.html' %}
+
+{% block content %}
+<main class="edit-page layout layout--3">
+    <div class="container">
+        <h2></h2>
+
+        <div class="editor-container">
+            <!-- Kontener dla Croppera -->
+            <div id="cropper-container" style="display:none; margin-bottom:20px;">
+                <img id="cropper-image" src="" style="max-width: 100%;">
+            </div>
+
+            <div class="editor">
+                <canvas id="canvas"></canvas>
+            </div>
+
+            <div class="controls">
+                <!-- Sekcja przycinania -->
+                <div class="tool-section">
+                    <h3>Przycinanie</h3>
+                    <button id="cropBtn" class="btn btn-primary">✂ Przytnij</button>
+                    <button id="applyCropBtn" class="btn btn-success" style="display:none;">✔ Zastosuj</button>
+                    <button id="cancelCropBtn" class="btn btn-danger" style="display:none;">✖ Anuluj</button>
+
+                    <div class="aspect-ratios" style="margin-top:10px; display:none;" id="aspectRatios">
+                        <button class="btn aspect-btn" data-ratio="free">Dowolne</button>
+                        <button class="btn aspect-btn" data-ratio="1:1">1:1</button>
+                        <button class="btn aspect-btn" data-ratio="4:3">4:3</button>
+                        <button class="btn aspect-btn" data-ratio="16:9">16:9</button>
+                    </div>
+                </div>
+
+                <!-- Sekcja filtrów -->
+                <div class="tool-section">
+                    <h3>Filtry</h3>
+                    <div class="filter-grid">
+                        <button class="btn filter-btn" data-filter="none">Original</button>
+                        <button class="btn filter-btn" data-filter="grayscale">Czarno-biały</button>
+                        <button class="btn filter-btn" data-filter="sepia">Sepia</button>
+                        <button class="btn filter-btn" data-filter="invert">Invert</button>
+                        <button class="btn filter-btn" data-filter="vintage">Vintage</button>
+                        <button class="btn filter-btn" data-filter="cool">Chłodny</button>
+                        <button class="btn filter-btn" data-filter="warm">Ciepły</button>
+                        <button class="btn filter-btn" data-filter="blur">Rozmycie</button>
+                    </div>
+                </div>
+
+                <!-- Sekcja transformacji -->
+                <div class="tool-section">
+                    <h3>Transformacje</h3>
+                    <button id="rotateLeft" class="btn">↺ Obrót w lewo</button>
+                    <button id="rotateRight" class="btn">↻ Obrót w prawo</button>
+                    <button id="flipHorizontal" class="btn">⇄ Odbicie poziome</button>
+                    <button id="flipVertical" class="btn">⇅ Odbicie pionowe</button>
+                </div>
+
+                <!-- Sekcja narzędzi -->
+<div class="tool-section">
+    <h3>Narzędzia</h3>
+    <button id="draw" class="btn">✏ Rysowanie</button>
+
+    <!-- Panel opcji rysowania (domyślnie ukryty) -->
+    <div id="drawing-options" style="display:none; margin-top:10px; padding:10px; background:#f5f5f5; border-radius:5px;">
+        <div style="margin-bottom:10px;">
+            <label>Kolor:</label>
+            <input type="color" id="drawing-color" value="#000000" style="vertical-align:middle;">
+            <span id="color-value" style="margin-left:5px;">#000000</span>
+        </div>
+
+        <div style="margin-bottom:10px;">
+            <label>Grubość linii:</label>
+            <input type="range" id="drawing-width" min="1" max="50" value="5" style="width:100px; vertical-align:middle;">
+            <span id="width-value" style="margin-left:5px;">5px</span>
+        </div>
+
+        <div style="margin-bottom:10px;">
+            <label>Tryb:</label>
+            <select id="drawing-mode" style="padding:5px;">
+                <option value="pencil">Ołówek</option>
+                <option value="brush">Pędzel</option>
+                <option value="spray">Spray</option>
+                <option value="circle">Kółka</option>
+                <option value="rect">Prostokąty</option>
+                <option value="line">Linie</option>
+                <option value="text">Tekst</option>
+                <option value="eraser">Gumka</option>
+            </select>
+        </div>
+
+        <div id="text-options" style="display:none; margin-bottom:10px;">
+            <label>Tekst:</label>
+            <input type="text" id="drawing-text" placeholder="Wpisz tekst" style="padding:5px;">
+            <select id="drawing-font" style="padding:5px; margin-left:5px;">
+                <option value="Arial">Arial</option>
+                <option value="Verdana">Verdana</option>
+                <option value="Times New Roman">Times New Roman</option>
+                <option value="Courier New">Courier New</option>
+            </select>
+            <input type="number" id="drawing-fontsize" min="8" max="72" value="24" style="width:50px; padding:5px; margin-left:5px;">
+        </div>
+
+        <button id="clear-drawing" class="btn btn-danger">Wyczyść rysunek</button>
+    </div>
+
+    <button id="resetBtn" class="btn">⟲ Resetuj</button>
+</div>
+
+                <!-- Przycisk zapisu -->
+                <div class="tool-section">
+                    <button id="saveBtn" class="btn btn-save">💾 Zapisz zmiany</button>
+                </div>
+            </div>
+        </div>
+
+        <form id="saveForm" method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            <input type="hidden" name="edited_image" id="edited_image">
+        </form>
+    </div>
+</main>
+
+<style>
+    .btn {
+        padding: 8px 15px;
+        margin: 0 5px 5px 0;
+        background: #7097E0;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+    .btn:hover {
+        background: #7074e0;
+    }
+    .btn-primary {
+        background: #4285f4;
+        color: white;
+        border-color: #4285f4;
+    }
+    .btn-success {
+        background: #34a853;
+        color: white;
+        border-color: #34a853;
+    }
+    .btn-danger {
+        background: #ea4335;
+        color: white;
+        border-color: #ea4335;
+    }
+    .btn-save {
+        background: #34a853;
+        color: #202124;
+        border-color: #34a853;
+        font-weight: bold;
+    }
+    #canvas {
+        border: 1px solid #ddd;
+        max-width: 100%;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    .editor-container {
+        display: flex;
+        flex-direction: column;
+    }
+    .tool-section {
+        margin: 15px 0;
+        padding: 15px 0;
+        border-top: 1px solid #eee;
+    }
+    .tool-section h3 {
+        margin-top: 0;
+        margin-bottom: 10px;
+        font-size: 16px;
+    }
+    .aspect-btn.active, .filter-btn.active {
+        background: #4285f4;
+        color: white;
+    }
+    .filter-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 8px;
+    }
+    .cropper-container {
+        margin: 0 auto;
+    }
+</style>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Inicjalizacja canvas
+    let canvas = new fabric.Canvas("canvas", {
+        backgroundColor: '#f8f8f8'
+    });
+    let cropper;
+    let originalImage;
+    let currentImage;
+    let history = [];
+
+    // Funkcja zapisująca stan do historii
+    function saveState() {
+        history.push(canvas.toDataURL());
+        if (history.length > 10) history.shift();
+    }
+
+    // Ładowanie obrazu
+    fabric.Image.fromURL("{{ photo.image.url }}", function(img) {
+        if (!img) {
+            console.error("Nie udało się załadować obrazu");
+            return;
+        }
+
+        originalImage = img;
+        currentImage = fabric.util.object.clone(img);
+        const maxWidth = 800;
+        const scale = maxWidth / img.width;
+        img.scaleToWidth(maxWidth);
+        canvas.setWidth(maxWidth);
+        canvas.setHeight(img.height * scale);
+        canvas.add(img);
+        canvas.renderAll();
+
+        saveState();
+    }, { crossOrigin: 'anonymous' });
+
+    // Implementacja filtrów
+    const filters = {
+        none: [],
+        grayscale: [new fabric.Image.filters.Grayscale()],
+        sepia: [new fabric.Image.filters.Sepia()],
+        invert: [new fabric.Image.filters.Invert()],
+        vintage: [
+            new fabric.Image.filters.Sepia({ alpha: 0.8 }),
+            new fabric.Image.filters.Brightness({ brightness: 0.1 })
+        ],
+        cool: [
+            new fabric.Image.filters.BlendColor({
+                color: '#0099ff',
+                mode: 'tint',
+                alpha: 0.2
+            })
+        ],
+        warm: [
+            new fabric.Image.filters.BlendColor({
+                color: '#ff9900',
+                mode: 'tint',
+                alpha: 0.2
+            })
+        ],
+        blur: [new fabric.Image.filters.Blur({ blur: 0.2 })]
+    };
+
+    // Obsługa przycisków filtrów
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const filterType = this.dataset.filter;
+            const img = canvas.getObjects()[0];
+
+            if (img && img.type === 'image') {
+                img.filters = filters[filterType] || [];
+                img.applyFilters();
+                canvas.renderAll();
+                saveState();
+
+                // Aktualizacja stanu aktywnych przycisków
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+            }
+        });
+    });
+
+    // Funkcje przycinania
+    function initCropper() {
+        if (canvas.getObjects().length === 0) return;
+
+        saveState();
+
+        document.querySelector(".editor").style.display = "none";
+        document.getElementById("cropper-container").style.display = "block";
+        document.getElementById("aspectRatios").style.display = "block";
+
+        document.querySelectorAll(".controls button:not(.crop-controls button)")
+               .forEach(b => b.style.display = "none");
+
+        document.getElementById("applyCropBtn").style.display = "inline-block";
+        document.getElementById("cancelCropBtn").style.display = "inline-block";
+
+        const dataURL = canvas.toDataURL({ quality: 0.9 });
+        const cropperImage = document.getElementById("cropper-image");
+        cropperImage.src = dataURL;
+
+        cropper = new Cropper(cropperImage, {
+            aspectRatio: NaN,
+            viewMode: 1,
+            autoCropArea: 0.8,
+            responsive: true,
+            restore: false,
+            checkCrossOrigin: false,
+            background: false,
+            highlight: false,
+            cropBoxMovable: true,
+            cropBoxResizable: true,
+            toggleDragModeOnDblclick: false,
+            minContainerWidth: 300,
+            minContainerHeight: 300
+        });
+    }
+
+    function applyCrop() {
+        if (!cropper) return;
+
+        const croppedCanvas = cropper.getCroppedCanvas({
+            width: 800,
+            height: 800,
+            minWidth: 100,
+            minHeight: 100,
+            fillColor: '#fff',
+            imageSmoothingEnabled: true,
+            imageSmoothingQuality: 'high'
+        });
+
+        const croppedDataURL = croppedCanvas.toDataURL('image/jpeg', 0.9);
+
+        fabric.Image.fromURL(croppedDataURL, function(img) {
+            canvas.clear();
+            canvas.setWidth(img.width);
+            canvas.setHeight(img.height);
+            canvas.add(img);
+            canvas.renderAll();
+            exitCropMode();
+            saveState();
+        });
+    }
+
+    function exitCropMode() {
+        document.querySelector(".editor").style.display = "block";
+        document.getElementById("cropper-container").style.display = "none";
+        document.getElementById("aspectRatios").style.display = "none";
+
+        document.querySelectorAll(".controls button").forEach(b => b.style.display = "inline-block");
+        document.getElementById("applyCropBtn").style.display = "none";
+        document.getElementById("cancelCropBtn").style.display = "none";
+
+        if (cropper) {
+            cropper.destroy();
+            cropper = null;
+        }
+    }
+
+    // Event listeners
+    document.getElementById("cropBtn").addEventListener("click", initCropper);
+    document.getElementById("applyCropBtn").addEventListener("click", applyCrop);
+    document.getElementById("cancelCropBtn").addEventListener("click", exitCropMode);
+
+    // Obsługa proporcji
+    const aspectRatios = {
+        'free': NaN,
+        '1:1': 1,
+        '4:3': 4/3,
+        '16:9': 16/9
+    };
+
+    document.querySelectorAll('.aspect-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.aspect-btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            if (cropper) {
+                cropper.setAspectRatio(aspectRatios[this.dataset.ratio]);
+            }
+        });
+    });
+
+    // Transformacje obrazu
+    document.getElementById("rotateLeft").addEventListener("click", function() {
+        const img = canvas.getObjects()[0];
+        if (img) {
+            img.rotate(img.angle - 90);
+            canvas.renderAll();
+            saveState();
+        }
+    });
+
+    document.getElementById("rotateRight").addEventListener("click", function() {
+        const img = canvas.getObjects()[0];
+        if (img) {
+            img.rotate(img.angle + 90);
+            canvas.renderAll();
+            saveState();
+        }
+    });
+
+    document.getElementById("flipHorizontal").addEventListener("click", function() {
+        const img = canvas.getObjects()[0];
+        if (img) {
+            img.flipX = !img.flipX;
+            canvas.renderAll();
+            saveState();
+        }
+    });
+
+    document.getElementById("flipVertical").addEventListener("click", function() {
+        const img = canvas.getObjects()[0];
+        if (img) {
+            img.flipY = !img.flipY;
+            canvas.renderAll();
+            saveState();
+        }
+    });
+
+    // Reset obrazu
+    document.getElementById("resetBtn").addEventListener("click", function() {
+        if (originalImage) {
+            canvas.clear();
+            currentImage = fabric.util.object.clone(originalImage);
+            canvas.add(currentImage);
+            canvas.renderAll();
+            saveState();
+
+            // Reset aktywnych filtrów
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            document.querySelector('.filter-btn[data-filter="none"]').classList.add('active');
+        }
+    });
+
+    // Rysowanie
+
+    // Zmienne do rysowania
+    let isDrawing = false;
+    let currentDrawingMode = 'pencil';
+    let currentTextObject = null;
+
+    // Inicjalizacja opcji rysowania
+    const drawingColor = document.getElementById("drawing-color");
+    const drawingWidth = document.getElementById("drawing-width");
+    const drawingMode = document.getElementById("drawing-mode");
+    const drawingOptions = document.getElementById("drawing-options");
+    const textOptions = document.getElementById("text-options");
+    const drawingText = document.getElementById("drawing-text");
+    const drawingFont = document.getElementById("drawing-font");
+    const drawingFontsize = document.getElementById("drawing-fontsize");
+    const colorValue = document.getElementById("color-value");
+    const widthValue = document.getElementById("width-value");
+
+    // Aktualizacja wartości koloru i grubości
+    drawingColor.addEventListener('input', function() {
+        colorValue.textContent = this.value;
+        canvas.freeDrawingBrush.color = this.value;
+    });
+
+    drawingWidth.addEventListener('input', function() {
+        widthValue.textContent = this.value + 'px';
+        canvas.freeDrawingBrush.width = parseInt(this.value);
+    });
+
+    // Zmiana trybu rysowania
+    drawingMode.addEventListener('change', function() {
+        currentDrawingMode = this.value;
+        textOptions.style.display = this.value === 'text' ? 'block' : 'none';
+
+        switch(this.value) {
+            case 'pencil':
+                canvas.freeDrawingBrush = new fabric.PencilBrush(canvas);
+                break;
+            case 'brush':
+                canvas.freeDrawingBrush = new fabric.PencilBrush(canvas);
+                canvas.freeDrawingBrush.decimate = 2; // Mniej precyzyjne linie
+                break;
+            case 'spray':
+                canvas.freeDrawingBrush = new fabric.SprayBrush(canvas);
+                canvas.freeDrawingBrush.width = parseInt(drawingWidth.value) * 2;
+                break;
+            case 'circle':
+            case 'rect':
+            case 'line':
+                canvas.isDrawingMode = false;
+                break;
+            case 'text':
+                canvas.isDrawingMode = false;
+                break;
+            case 'eraser':
+                canvas.freeDrawingBrush = new fabric.PencilBrush(canvas);
+                canvas.freeDrawingBrush.color = '#ffffff';
+                canvas.freeDrawingBrush.width = parseInt(drawingWidth.value) * 2;
+                break;
+        }
+    });
+
+    // Obsługa kliknięcia dla trybu tekstowego
+    canvas.on('mouse:down', function(options) {
+        if (currentDrawingMode === 'text' && !currentTextObject) {
+            const text = new fabric.IText(drawingText.value || 'Wpisz tekst', {
+                left: options.e.clientX - canvas.upperCanvasEl.getBoundingClientRect().left,
+                top: options.e.clientY - canvas.upperCanvasEl.getBoundingClientRect().top,
+                fontFamily: drawingFont.value,
+                fontSize: parseInt(drawingFontsize.value),
+                fill: drawingColor.value
+            });
+            canvas.add(text);
+            canvas.setActiveObject(text);
+            text.enterEditing();
+            text.selectAll();
+            currentTextObject = text;
+        }
+    });
+
+    // Obsługa trybów kształtów
+    canvas.on('mouse:down', function(options) {
+        if (['circle', 'rect', 'line'].includes(currentDrawingMode)) {
+            const pointer = canvas.getPointer(options.e);
+            let shape;
+
+            switch(currentDrawingMode) {
+                case 'circle':
+                    shape = new fabric.Circle({
+                        left: pointer.x,
+                        top: pointer.y,
+                        radius: 1,
+                        fill: 'transparent',
+                        stroke: drawingColor.value,
+                        strokeWidth: parseInt(drawingWidth.value)
+                    });
+                    break;
+                case 'rect':
+                    shape = new fabric.Rect({
+                        left: pointer.x,
+                        top: pointer.y,
+                        width: 1,
+                        height: 1,
+                        fill: 'transparent',
+                        stroke: drawingColor.value,
+                        strokeWidth: parseInt(drawingWidth.value)
+                    });
+                    break;
+                case 'line':
+                    shape = new fabric.Line([pointer.x, pointer.y, pointer.x, pointer.y], {
+                        stroke: drawingColor.value,
+                        strokeWidth: parseInt(drawingWidth.value)
+                    });
+                    break;
+            }
+
+            canvas.add(shape);
+            canvas.setActiveObject(shape);
+
+            canvas.on('mouse:move', function(options) {
+                const pointer = canvas.getPointer(options.e);
+
+                switch(currentDrawingMode) {
+                    case 'circle':
+                        shape.set({
+                            radius: Math.abs(pointer.x - shape.left) / 2,
+                            originX: 'center',
+                            originY: 'center'
+                        });
+                        break;
+                    case 'rect':
+                        shape.set({
+                            width: pointer.x - shape.left,
+                            height: pointer.y - shape.top
+                        });
+                        break;
+                    case 'line':
+                        shape.set({
+                            x2: pointer.x,
+                            y2: pointer.y
+                        });
+                        break;
+                }
+
+                canvas.renderAll();
+            });
+
+            canvas.on('mouse:up', function() {
+                canvas.off('mouse:move');
+                canvas.off('mouse:up');
+                saveState();
+            });
+        }
+    });
+
+    // Obsługa przycisku rysowania
+    document.getElementById("draw").addEventListener("click", function() {
+        isDrawing = !isDrawing;
+        canvas.isDrawingMode = isDrawing && ['pencil', 'brush', 'spray', 'eraser'].includes(currentDrawingMode);
+        drawingOptions.style.display = isDrawing ? 'block' : 'none';
+        this.style.backgroundColor = isDrawing ? '#4285f4' : '';
+        this.style.color = isDrawing ? 'white' : '';
+
+        if (isDrawing) {
+            // Inicjalizacja pędzla
+            canvas.freeDrawingBrush.color = drawingColor.value;
+            canvas.freeDrawingBrush.width = parseInt(drawingWidth.value);
+        }
+    });
+
+    // Czyszczenie rysunku
+    document.getElementById("clear-drawing").addEventListener("click", function() {
+        const objects = canvas.getObjects();
+        objects.forEach(obj => {
+            if (obj.type !== 'image') {
+                canvas.remove(obj);
+            }
+        });
+        canvas.renderAll();
+        saveState();
+    });
+
+    // Zapisywanie
+    document.getElementById("saveBtn").addEventListener("click", function() {
+        if (canvas.getObjects().length === 0) {
+            alert("Brak obrazu do zapisania!");
+            return;
+        }
+
+        this.textContent = "Zapisywanie...";
+        this.disabled = true;
+
+        const editedImage = canvas.toDataURL({
+            format: 'jpeg',
+            quality: 0.9
+        });
+
+        document.getElementById("edited_image").value = editedImage;
+        document.getElementById("saveForm").submit();
+    });
+});
+</script>
+{% endblock %}

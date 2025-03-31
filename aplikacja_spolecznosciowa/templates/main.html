@@ -1,108 +1,102 @@
 <!DOCTYPE html>
 {% load static %}
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="shortcut icon" href="assets/favicon.ico" type="image/x-icon" />
-    <link rel="stylesheet" href="{% static 'styles/style.css' %}" />
+<html lang="pl"> <!-- Zmienione na polski -->
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Connectly - portal społecznościowy">
+    <link rel="shortcut icon" href="{% static 'assets/favicon.ico' %}" type="image/x-icon">
+    <link rel="stylesheet" href="{% static 'styles/style.css' %}">
+
+    <!-- Cropper.js -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
+
+    <!-- Fabric.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.0/fabric.min.js"></script>
+
     <title>Connectly - Znajdź przyjaciół!</title>
-  </head>
+</head>
 
-  <body>
-
+<body>
     {% include 'navbar.html' %}
 
     {% if messages %}
-    <ul class="messages">
+    <div class="messages-container"> <!-- Lepsza semantyka -->
         {% for message in messages %}
-            <li>{{ message }}</li>
+        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
         {% endfor %}
-    </ul>
+    </div>
     {% endif %}
 
-
     {% block content %}
-
-
     {% endblock %}
+
     <script src="{% static 'js/script.js' %}"></script>
-  <script>
-    function showEditForm(messageId) {
-        document.getElementById(`message-text-${messageId}`).style.display = "none";
-        document.getElementById(`edit-form-${messageId}`).style.display = "block";
-    }
+    <script>
+        // Jedna wersja funkcji
+        function showEditForm(messageId) {
+            document.querySelector(`button[onclick="showEditForm(${messageId})"]`).style.display = 'none';
+            document.getElementById(`edit-form-${messageId}`).style.display = 'block';
+            document.getElementById(`message-text-${messageId}`).style.display = 'none';
+        }
 
-    function cancelEdit(messageId) {
-        document.getElementById(`edit-form-${messageId}`).style.display = "none";
-        document.getElementById(`message-text-${messageId}`).style.display = "block";
-    }
-    function showEditForm(messageId) {
-    document.querySelector(`button[onclick="showEditForm(${messageId})"]`).style.display = 'none';
+        function cancelEdit(messageId) {
+            document.querySelector(`button[onclick="showEditForm(${messageId})"]`).style.display = 'inline-block';
+            document.getElementById(`edit-form-${messageId}`).style.display = 'none';
+            document.getElementById(`message-text-${messageId}`).style.display = 'block';
+        }
 
-    document.getElementById(`edit-form-${messageId}`).style.display = 'block';
-    document.getElementById(`message-text-${messageId}`).style.display = 'none';
-}
+        // Funkcje związane z przyjaciółmi
+        function sendFriendRequest(userId) {
+            fetch(`/send_friend_request/${userId}/`, {
+                method: "POST",
+                headers: { "X-CSRFToken": "{{ csrf_token }}" }
+            })
+            .then(handleResponse)
+            .catch(handleError);
+        }
 
-function cancelEdit(messageId) {
-    document.querySelector(`button[onclick="showEditForm(${messageId})"]`).style.display = 'inline-block';
-
-    document.getElementById(`edit-form-${messageId}`).style.display = 'none';
-    document.getElementById(`message-text-${messageId}`).style.display = 'block';
-}
-
-function sendFriendRequest(userId) {
-        fetch(`/send_friend_request/${userId}/`, {
-            method: "POST",
-            headers: { "X-CSRFToken": "{{ csrf_token }}" }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                alert("Zaproszenie wysłane!");
-                location.reload();
-            } else {
-                alert(data.error);
+        function removeFriend(userId) {
+            if(confirm("Czy na pewno chcesz usunąć tego znajomego?")) {
+                fetch(`/remove_friend/${userId}/`, {
+                    method: "POST",
+                    headers: { "X-CSRFToken": "{{ csrf_token }}" }
+                })
+                .then(handleResponse)
+                .catch(handleError);
             }
-        })
-        .catch(error => console.error("Błąd:", error));
-    }
+        }
 
-    function removeFriend(userId) {
-        fetch(`/remove_friend/${userId}/`, {
-            method: "POST",
-            headers: { "X-CSRFToken": "{{ csrf_token }}" }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                alert("Znajomy usunięty!");
-                location.reload();  // Odśwież stronę po usunięciu znajomego
-            } else {
-                alert(data.error);
-            }
-        })
-        .catch(error => console.error("Błąd:", error));
-    }
-    function manageFriendRequest(requestId, action) {
-        fetch(`/manage_friend_request/${requestId}/${action}/`, {
-            method: "POST",
-            headers: { "X-CSRFToken": "{{ csrf_token }}" }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                alert(data.success);
-                location.reload();
-            } else {
-                alert(data.error);
-            }
-        })
-        .catch(error => console.error("Błąd:", error));
-    }
-</script>
+        function manageFriendRequest(requestId, action) {
+            fetch(`/manage_friend_request/${requestId}/${action}/`, {
+                method: "POST",
+                headers: { "X-CSRFToken": "{{ csrf_token }}" }
+            })
+            .then(handleResponse)
+            .catch(handleError);
+        }
 
+        // Wspólne funkcje pomocnicze
+        function handleResponse(response) {
+            return response.json().then(data => {
+                if (data.success) {
+                    if(data.redirect) {
+                        window.location.href = data.redirect;
+                    } else {
+                        location.reload();
+                    }
+                } else {
+                    alert(data.error || "Wystąpił błąd");
+                }
+            });
+        }
 
-  </body>
+        function handleError(error) {
+            console.error("Błąd:", error);
+            alert("Wystąpił błąd podczas przetwarzania żądania");
+        }
+    </script>
+</body>
 </html>
