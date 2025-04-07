@@ -7,9 +7,16 @@
         <div class="messages-section">
             <h3>Odebrane wiadomości</h3>
             {% for msg in messages_received %}
-                <div class="message-card">
+                <div class="message-card {% if msg.is_read %}read{% else %}unread{% endif %}">
                     <p><strong>Od:</strong> @{{ msg.sender.username }}</p>
-                    <p>{{ msg.message }}</p>
+                    {% if msg.msg_type == 'T' %}
+                        <p>{{ msg.message }}</p>
+                    {% elif msg.msg_type == 'V' %}
+                        <audio controls>
+                            <source src="{{ msg.audio_file.url }}" type="audio/wav">
+                            Twoja przeglądarka nie obsługuje odtwarzacza audio.
+                        </audio>
+                    {% endif %}
                     <small>{{ msg.timestamp }}</small>
                 </div>
             {% empty %}
@@ -22,12 +29,22 @@
             {% for msg in messages_sent %}
                 <div class="message-card sent">
                     <p><strong>Do:</strong> @{{ msg.receiver.username }}</p>
-                    <p>{{ msg.message }}</p>
-                    <small>{{ msg.timestamp }}</small>
+                    {% if msg.msg_type == 'T' %}
+                        <p>{{ msg.message }}</p>
+                    {% elif msg.msg_type == 'V' %}
+                        <audio controls>
+                            <source src="{{ msg.audio_file.url }}" type="audio/wav">
+                            Twoja przeglądarka nie obsługuje odtwarzacza audio.
+                        </audio>
+                    {% endif %}
+                    <div class="message-footer">
+                        <small class="message-timestamp">{{ msg.timestamp }}</small>
+                    </div>
                 </div>
             {% empty %}
                 <p>Nie wysłałeś jeszcze żadnych wiadomości.</p>
             {% endfor %}
         </div>
     </div>
+
 {% endblock %}

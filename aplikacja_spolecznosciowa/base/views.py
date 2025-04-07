@@ -8,6 +8,9 @@ from .models import Room, Topic, Message, User, DirectMessage, FriendRequest, Fr
 from .forms import RoomForm, UserForm, MyUserCreationForm
 from .models import Notification
 import re
+from PIL import Image
+from moviepy import VideoFileClip
+import os
 
 
 def loginPage(request):
@@ -97,6 +100,16 @@ def room(request, pk):
     room_messages = room.message_set.all()
     participants = room.participants.all()
 
+    def get_file_type(file):
+        extension = file.name.split('.')[-1].lower()
+        if extension in ['jpg', 'jpeg', 'png']:
+            return 'image'
+        elif extension in ['mp4', 'webm']:
+            return 'video'
+        elif extension in ['mp3', 'wav']:
+            return 'audio'
+        return None
+
     if request.method == "POST":
         message_body = request.POST.get('body', '')
         files = request.FILES.getlist('files')
@@ -106,7 +119,8 @@ def room(request, pk):
                 user=request.user,
                 room=room,
                 body=message_body if file == files[0] else "",
-                file=file
+                file=file,
+                file_type=get_file_type(file)
             )
 
         room.participants.add(request.user)
@@ -286,23 +300,41 @@ def inbox(request):
     return render(request, 'base/inbox.html', context)
 
 
-
 @login_required(login_url='login')
 def send_message(request):
     users = User.objects.exclude(id=request.user.id)
 
     if request.method == 'POST':
         user_id = request.POST.get('user_id')
-        message_body = request.POST.get('message')
         receiver = get_object_or_404(User, id=user_id)
+        audio_file = request.FILES.get('audio_file')
 
         if request.user == receiver:
             messages.error(request, "Nie możesz wysłać wiadomości do siebie!")
             return redirect('send_message')
 
-        if message_body.strip():
-            DirectMessage.objects.create(sender=request.user, receiver=receiver, message=message_body)
-            messages.success(request, f"Wiadomość wysłana do @{receiver.username}")
+        if audio_file:
+            # Walidacja pliku audio
+            if not audio_file.name.endswith(('.wav', '.mp3', '.ogg')):
+                messages.error(request, "Nieobsługiwany format pliku audio")
+                return redirect('send_message')
+
+            DirectMessage.objects.create(
+                sender=request.user,
+                receiver=receiver,
+                audio_file=audio_file,
+                msg_type='V'
+            )
+            messages.success(request, f"Wiadomość głosowa wysłana do @{receiver.username}")
+            return redirect('inbox')
+
+        elif request.POST.get('message', '').strip():
+            DirectMessage.objects.create(
+                sender=request.user,
+                receiver=receiver,
+                message=request.POST['message']
+            )
+            messages.success(request, f"Wiadomość tekstowa wysłana do @{receiver.username}")
             return redirect('inbox')
 
     context = {'users': users}
@@ -378,7 +410,6 @@ def remove_friend(request, user_id):
     return JsonResponse({"error": "Nie jesteście znajomymi."}, status=400)
 
 
-from .models import Photo
 from .forms import PhotoForm
 
 @login_required

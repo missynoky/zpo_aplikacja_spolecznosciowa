@@ -11,7 +11,7 @@
                     {% endfor %}
                 </div>
             {% endif %}
-            <form method="POST">
+            <form method="POST" enctype="multipart/form-data">
                 {% csrf_token %}
                 <label for="receiver">Wybierz użytkownika:</label>
                 <select name="user_id" required>
@@ -19,9 +19,58 @@
                         <option value="{{ user.id }}">@{{ user.username }}</option>
                     {% endfor %}
                 </select>
-                <textarea name="message" placeholder="Twoja wiadomość..." required></textarea>
+
+                <div class="voice-recorder">
+                    <button type="button" id="startRecord">🎤 Rozpocznij nagrywanie</button>
+                    <button type="button" id="stopRecord" disabled>⏹ Zatrzymaj</button>
+                    <audio id="audioPreview" controls style="display: none;"></audio>
+                    <input type="file" name="audio_file" id="audioFile" accept="audio/*" hidden>
+                </div>
+
+                <textarea name="message" placeholder="Lub wpisz tekstową wiadomość..."></textarea>
                 <button type="submit">Wyślij</button>
             </form>
         </div>
     </div>
+
+<script>
+let mediaRecorder;
+let audioChunks = [];
+
+document.getElementById('startRecord').addEventListener('click', async () => {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    mediaRecorder = new MediaRecorder(stream);
+
+    mediaRecorder.ondataavailable = (e) => {
+        audioChunks.push(e.data);
+    };
+
+    mediaRecorder.onstop = () => {
+        const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+        const audioUrl = URL.createObjectURL(audioBlob);
+
+        const audioPreview = document.getElementById('audioPreview');
+        audioPreview.src = audioUrl;
+        audioPreview.style.display = 'block';
+
+        const fileInput = document.getElementById('audioFile');
+        const file = new File([audioBlob], 'recording.wav', { type: 'audio/wav' });
+        const dataTransfer = new DataTransfer();
+        dataTransfer.items.add(file);
+        fileInput.files = dataTransfer.files;
+
+        audioChunks = [];
+    };
+
+    mediaRecorder.start();
+    document.getElementById('startRecord').disabled = true;
+    document.getElementById('stopRecord').disabled = false;
+});
+
+document.getElementById('stopRecord').addEventListener('click', () => {
+    mediaRecorder.stop();
+    document.getElementById('startRecord').disabled = false;
+    document.getElementById('stopRecord').disabled = true;
+});
+</script>
 {% endblock %}

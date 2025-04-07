@@ -62,16 +62,20 @@ class Notification(models.Model):
         return f"{self.user.username} - {self.message}"
 
 
-
 class DirectMessage(models.Model):
+    MSG_TYPE = [
+        ('T', 'Tekst'),
+        ('V', 'Głos')
+    ]
+
     sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name="sent_messages")
     receiver = models.ForeignKey(User, on_delete=models.CASCADE, related_name="received_messages")
-    message = models.TextField()
+    message = models.TextField(blank=True, null=True)
+    audio_file = models.FileField(upload_to='voice_messages/', blank=True, null=True)
+    msg_type = models.CharField(max_length=1, choices=MSG_TYPE, default='T')
     timestamp = models.DateTimeField(auto_now_add=True)
     is_read = models.BooleanField(default=False)
 
-    def __str__(self):
-        return f"{self.sender.username} -> {self.receiver.username}: {self.message[:30]}"
 
 class FriendRequest(models.Model):
     sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name="sent_requests")
