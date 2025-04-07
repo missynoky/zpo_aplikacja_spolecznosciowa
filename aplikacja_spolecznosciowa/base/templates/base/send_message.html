@@ -21,56 +21,168 @@
                 </select>
 
                 <div class="voice-recorder">
-                    <button type="button" id="startRecord">🎤 Rozpocznij nagrywanie</button>
-                    <button type="button" id="stopRecord" disabled>⏹ Zatrzymaj</button>
+                    <div class="recording-controls">
+                        <button type="button" id="startRecord" class="record-btn">🎤 Rozpocznij nagrywanie</button>
+                        <button type="button" id="stopRecord" class="record-btn stop-btn" disabled>⏹ Zatrzymaj nagrywanie</button>
+                    </div>
                     <audio id="audioPreview" controls style="display: none;"></audio>
                     <input type="file" name="audio_file" id="audioFile" accept="audio/*" hidden>
+
+                    <div class="recording-actions" id="recordingActions" style="display: none;">
+                        <button type="button" id="recordAgain" class="action-btn">🔄 Nagraj ponownie</button>
+                    </div>
                 </div>
 
                 <textarea name="message" placeholder="Lub wpisz tekstową wiadomość..."></textarea>
-                <button type="submit">Wyślij</button>
+                <button type="submit" class="submit-btn">Wyślij</button>
             </form>
         </div>
     </div>
 
+    <style>
+        .voice-recorder {
+            margin: 15px 0;
+        }
+
+        .recording-controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+
+        .record-btn {
+            padding: 8px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .record-btn:hover {
+            background-color: #45a049;
+        }
+
+        .stop-btn {
+            background-color: #f44336;
+        }
+
+        .stop-btn:hover {
+            background-color: #d32f2f;
+        }
+
+        .recording-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .action-btn {
+            padding: 6px 12px;
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .action-btn:hover {
+            background-color: #0b7dda;
+        }
+
+        #audioPreview {
+            margin-top: 10px;
+            width: 100%;
+        }
+
+        .submit-btn {
+            margin-top: 15px;
+            padding: 10px 20px;
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+    </style>
+
 <script>
 let mediaRecorder;
 let audioChunks = [];
+let audioBlob = null;
 
 document.getElementById('startRecord').addEventListener('click', async () => {
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    mediaRecorder = new MediaRecorder(stream);
-
-    mediaRecorder.ondataavailable = (e) => {
-        audioChunks.push(e.data);
-    };
-
-    mediaRecorder.onstop = () => {
-        const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
-        const audioUrl = URL.createObjectURL(audioBlob);
-
-        const audioPreview = document.getElementById('audioPreview');
-        audioPreview.src = audioUrl;
-        audioPreview.style.display = 'block';
-
-        const fileInput = document.getElementById('audioFile');
-        const file = new File([audioBlob], 'recording.wav', { type: 'audio/wav' });
-        const dataTransfer = new DataTransfer();
-        dataTransfer.items.add(file);
-        fileInput.files = dataTransfer.files;
-
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
         audioChunks = [];
-    };
+        mediaRecorder = new MediaRecorder(stream);
 
-    mediaRecorder.start();
-    document.getElementById('startRecord').disabled = true;
-    document.getElementById('stopRecord').disabled = false;
+        mediaRecorder.ondataavailable = (e) => {
+            audioChunks.push(e.data);
+        };
+
+        mediaRecorder.onstop = () => {
+            audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+            const audioUrl = URL.createObjectURL(audioBlob);
+
+            const audioPreview = document.getElementById('audioPreview');
+            audioPreview.src = audioUrl;
+            audioPreview.style.display = 'block';
+
+            const fileInput = document.getElementById('audioFile');
+            const file = new File([audioBlob], 'recording.wav', { type: 'audio/wav' });
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(file);
+            fileInput.files = dataTransfer.files;
+
+            // Pokaż przyciski akcji po zatrzymaniu nagrywania
+            document.getElementById('recordingActions').style.display = 'flex';
+        };
+
+        mediaRecorder.start();
+        document.getElementById('startRecord').disabled = true;
+        document.getElementById('stopRecord').disabled = false;
+
+        // Ukryj przyciski akcji podczas nowego nagrania
+        document.getElementById('recordingActions').style.display = 'none';
+        document.getElementById('audioPreview').style.display = 'none';
+
+    } catch (error) {
+        console.error('Błąd dostępu do mikrofonu:', error);
+        alert('Nie można uzyskać dostępu do mikrofonu. Sprawdź uprawnienia.');
+    }
 });
 
 document.getElementById('stopRecord').addEventListener('click', () => {
-    mediaRecorder.stop();
+    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+        mediaRecorder.stop();
+        document.getElementById('startRecord').disabled = false;
+        document.getElementById('stopRecord').disabled = true;
+
+        // Zatrzymaj wszystkie ścieżki strumienia
+        mediaRecorder.stream.getTracks().forEach(track => track.stop());
+    }
+});
+
+document.getElementById('recordAgain').addEventListener('click', () => {
+    // Resetujemy interfejs do stanu początkowego
+    document.getElementById('audioPreview').style.display = 'none';
+    document.getElementById('recordingActions').style.display = 'none';
     document.getElementById('startRecord').disabled = false;
     document.getElementById('stopRecord').disabled = true;
+
+    // Usuwamy poprzednie nagranie
+    const fileInput = document.getElementById('audioFile');
+    fileInput.value = '';
+    audioChunks = [];
+    audioBlob = null;
+});
+
+// Obsługa odtwarzania nagrania przez kliknięcie na odtwarzacz audio
+document.getElementById('audioPreview').addEventListener('click', function(e) {
+    e.stopPropagation(); // Zapobiega propagacji zdarzenia
 });
 </script>
 {% endblock %}
